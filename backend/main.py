@@ -2,7 +2,7 @@ from flask import Flask,redirect,render_template
 from flask_sqlalchemy import SQLAlchemy
 
 # mydatabase connection
-
+#helloo
 local_server=True
 app=Flask(__name__)
 app.secret_key="rushdha"
