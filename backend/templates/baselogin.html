@@ -68,7 +68,7 @@
           <li><a class="nav-link scrollto" href="#doctors">Available Beds</a></li>
           <li class="dropdown"><a href="#"><span>Sign In</span> <i class="bi bi-chevron-down"></i></a>
             <ul>
-              <li><a href="/userlogin">User Login</a></li>
+              <li><a href="#">User Login</a></li>
               
               <li><a href="#">Hospital Login</a></li>
               <li><a href="#">Admin Login</a></li>
@@ -96,20 +96,16 @@
         <!-- Slide 1 -->
         <div class="carousel-item active" style="background-image: url(static/assets/img/slide/slide-1.jpg)">
           <div class="container">
-            <h2>Welcome to <span>Bed slot Booking Center</span></h2>
-            <p></p>
-            <a href="#about" class="btn-get-started scrollto">Read More</a>
+
+ {% block form %}
+
+ {% endblock form %}           
+            
+
           </div>
         </div>
 
-        <!-- Slide 2 -->
-        <div class="carousel-item" style="background-image: url(static/assets/img/slide/slide-2.jpg)">
-          <div class="container">
-            <h2>INDIA</h2>
-            <p></p>
-            <a href="#about" class="btn-get-started scrollto">Read More</a>
-          </div>
-        </div>
+       
 
         
 
@@ -127,19 +123,8 @@
   </section><!-- End Hero -->
 
   <main id="main">
-    {% block body %}
-    {% endblock body  %}
-<footer>
-    <div class="container">
-      <div class="copyright">
-        &copy; Copyright <strong><span>rushdha</span></strong>. All Rights Reserved
-      </div>
-      <div class="credits">
-       
-        Designed by <a href="https://bootstrapmade.com/">rushdha</a>
-      </div>
-    </div>
-  </footer><!-- End Footer -->
+   
+    
 
   <div id="preloader"></div>
   <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>

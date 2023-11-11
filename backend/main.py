@@ -1,6 +1,7 @@
 from flask import Flask,redirect,render_template
 from flask_sqlalchemy import SQLAlchemy
-
+from flask_login import UserMixin
+from flask_login import login_required,logout_user,login_user,login_manager,LoginManager,current_user 
 # mydatabase connection
 #helloo
 local_server=True
@@ -17,11 +18,28 @@ db=SQLAlchemy(app)
 class Test(db.Model):
     id=db.Column(db.Integer,primary_key=True)
     name=db.Column(db.String(50))
-    
+
+class user(db.Model):
+    uid=db.Column(db.Integer,primary_key=True)
+    srfid=db.Column(db.String(20),unique=True)
+    email=db.Column(db.String(20))
+    dob=db.Column(db.String(0))
+       
 
 @app.route("/")
 def home():
     return render_template("index.html")
+
+#to create particular routing for user login t
+#this return usersignup page
+@app.route("/usersignup")
+def usersignup():
+    return render_template("usersignup.html")
+
+@app.route("/userlogin")
+def userlogin():
+    return render_template("userlogin.html")
+
 
 # testing whether db is connected or not
 
