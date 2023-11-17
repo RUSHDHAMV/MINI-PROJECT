@@ -1,4 +1,4 @@
-from flask import Flask,redirect,render_template, request
+from flask import Flask, flash,redirect,render_template, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 from flask_login import login_required,logout_user,login_user,login_manager,LoginManager,current_user
@@ -14,6 +14,8 @@ app=Flask(__name__)
 app.secret_key="rushdha"
 
 
+login_manager=LoginManager(app)
+login_manager.login_view='login'
 
 
 # to config particular data
@@ -24,30 +26,29 @@ db=SQLAlchemy(app)
 
 
 
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id)) 
+
+
+
 
 class Test(db.Model):
     id=db.Column(db.Integer,primary_key=True)
     name=db.Column(db.String(50))
 
 class User(UserMixin,db.Model):
-    uid=db.Column(db.Integer,primary_key=True)
+    id=db.Column(db.Integer,primary_key=True)
     srfid=db.Column(db.String(20),unique=True)
-    email=db.Column(db.String(20))
-    dob=db.Column(db.String(20))
+    email=db.Column(db.String(100))
+    dob=db.Column(db.String(2000))
        
 
 @app.route("/")
 def home():
     return render_template("index.html")
 
-@app.route("/usersignup")
-def usersignup():
-    return render_template("usersignup.html")
 
-
-@app.route("/userlogin")
-def userlogin():
-    return render_template("userlogin.html")
 # when anyone sign in the submit btn then all the infrmtn will happen in signup
 #/signup happen in main.py file
 @app.route("/signup",methods=['POST','GET'])
@@ -59,7 +60,8 @@ def signup():
         #print(srfid,email,dob)
         encpassword=generate_password_hash(dob)
         from sqlalchemy import create_engine
-        
+
+
         engine = create_engine("sqlite+pysqlite:///:memory:", echo=True, future=True)
         engine=engine.connect()
         #new_user=db.engine.execute(f"INSERT INTO `user` (`srfid`,`email`,`dob`) VALUES ('{srfid}','{email}','{encpassword}') ")
@@ -78,7 +80,22 @@ def signup():
 
         
 
+@app.route('/login',methods=['POST','GET'])
+def login():
+    if request.method=="POST":
+        srfid=request.form.get('srf')
+        dob=request.form.get('dob')
+        user=User.query.filter_by(srfid=srfid).first()
+        if user and check_password_hash(user.dob,dob):
+            login_user(user)
+            
+            return "success"
+        else:
+            
+            return "fail"
 
+
+    return render_template("userlogin.html")
 
 
    
