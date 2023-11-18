@@ -1,4 +1,4 @@
-from flask import Flask, flash,redirect,render_template, request, url_for
+from flask import Flask, flash, json,redirect,render_template, request, session, url_for
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 from flask_login import login_required,logout_user,login_user,login_manager,LoginManager,current_user
@@ -26,6 +26,8 @@ app.config['SQLALCHEMY_DATABASE_URI']='mysql://root:@localhost/slot'
 db=SQLAlchemy(app)
 
 
+with open('config.json','r') as c:
+    params=json.load(c)["params"]
 
 
 @login_manager.user_loader
@@ -116,6 +118,22 @@ def login():
     return render_template("userlogin.html")
 
    
+#admin
+@app.route('/admin',methods=['POST','GET'])       
+def admin():
+    if request.method=="POST":
+        username=request.form.get('username')
+        password=request.form.get('password')
+        if(username==params['username'] and password==params['password']):
+            session['user']=username
+            return render_template("addHosUser.html")
+
+
+    return render_template("admin.html")
+
+
+
+
 
 @app.route('/logout')
 @login_required

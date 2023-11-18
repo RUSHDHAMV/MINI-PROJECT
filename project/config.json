@@ -2,7 +2,7 @@
 
     "params":
     {
-        "user":"admin",
+        "username":"admin",
         "password":"admin"
     }
 }
