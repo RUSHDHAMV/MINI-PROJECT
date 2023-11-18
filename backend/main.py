@@ -1,9 +1,9 @@
-from flask import Flask, flash,redirect,render_template, request
+from flask import Flask, flash,redirect,render_template, request, url_for
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 from flask_login import login_required,logout_user,login_user,login_manager,LoginManager,current_user
 
-from sqlalchemy import create_engine
+#from sqlalchemy import create_engine
 
 from werkzeug.security import generate_password_hash,check_password_hash
 
@@ -71,16 +71,27 @@ def signup():
         #print(srfid,email,dob)
         #encrypting dob ,at the time of login it decrypt
         encpassword=generate_password_hash(dob)
+        user=User.query.filter_by(srfid=srfid).first()
+        
+         # to ckeck user is already exist
+
+        emailUser=User.query.filter_by(email=email).first()
+        if user or emailUser:
+            flash("Email or srfid is already taken","warning")
+            return render_template("usersignup.html")
+        
+
+
+
         #engine = create_engine("sqlite+pysqlite:///:memory:", echo=True, future=True)
         #engine=engine.connect()
         #new_user=db.engine.execute(f"INSERT INTO `user` (`srfid`,`email`,`dob`) VALUES ('{srfid}','{email}','{encpassword}') ")
         new_user=User(srfid=srfid,email=email,dob=encpassword)
         db.session.add(new_user)
         db.session.commit()
-                
-       
-    
-        return 'USER added'
+        
+        flash("SignUp Success Please Login","success")
+        return render_template("userlogin.html")
         
        
 
@@ -95,19 +106,24 @@ def login():
         user=User.query.filter_by(srfid=srfid).first()
         if user and check_password_hash(user.dob,dob):
             login_user(user)
-            return "login success"
-        
-        #    flash("Login Success","info")
-        #    return render_template("index.html")
+            flash("Login Success","info")
+            return render_template("index.html")
         else:
-            return "login fail"
-         #   flash("Invalid Credentials","danger")
-          #  return render_template("userlogin.html")
+            flash("Invalid Credentials","danger")
+            return render_template("userlogin.html")
 
 
     return render_template("userlogin.html")
 
    
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    flash("Logout Successfully","warning")
+    return redirect(url_for('login'))
+
 
 
 # testing whether db is connected or not
