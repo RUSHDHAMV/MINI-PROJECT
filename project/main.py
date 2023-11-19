@@ -126,7 +126,11 @@ def admin():
         password=request.form.get('password')
         if(username==params['username'] and password==params['password']):
             session['user']=username
+            flash("Login success","info")
             return render_template("addHosUser.html")
+        else:
+             flash("Invalid Credentials","danger")
+
 
 
     return render_template("admin.html")
