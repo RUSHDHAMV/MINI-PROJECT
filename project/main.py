@@ -1,7 +1,10 @@
 from flask import Flask, flash, json,redirect,render_template, request, session, url_for
 from flask_sqlalchemy import SQLAlchemy
+
 from flask_login import UserMixin
 from flask_login import login_required,logout_user,login_user,login_manager,LoginManager,current_user
+from sqlalchemy.exc import OperationalError, ProgrammingError
+
 
 #from sqlalchemy import create_engine
 
@@ -20,14 +23,14 @@ with open('config.json','r') as c:
     params=json.load(c)["params"]
 
 
-app.config.update(
-     MAIL_SERVER='smtp.gmail.com',
-     MAIL_PORT='465',
-     MAIL_USE_SSL=True,
-     MAIL_USERNAME='gmail-user',
-     MAIL_PASSWORD='gmail-password'
- )
-mail = Mail(app)
+#app.config.update(
+ #    MAIL_SERVER='smtp.gmail.com',
+  #   MAIL_PORT='465',
+   #  MAIL_USE_SSL=True,
+    # MAIL_USERNAME='gmail-user',
+     #MAIL_PASSWORD='gmail-password'
+ #)
+#mail = Mail(app)
 
 
 
@@ -173,7 +176,9 @@ def logout():
 
 @app.route('/addHospitalUser',methods=['POST','GET'])
 def hospitalUser():
-    if('user' in session and session['user']==params['user']):
+   
+    if('user' in session and session['user']=="admin"):
+      
         if request.method=="POST":
             hcode=request.form.get('hcode')
             email=request.form.get('email')
@@ -191,7 +196,7 @@ def hospitalUser():
 
             # my mail starts from here if you not need to send mail comment the below line
            
-            mail.send_message('Bed Slot Booking CENTER',sender=params['gmail-user'],recipients=[email],body=f"Welcome thanks for choosing us\nYour Login Credentials Are:\n Email Address: {email}\nPassword: {password}\n\nHospital Code {hcode}\n\n Do not share your password\n\n\nThank You..." )
+            # mail.send_message('COVID CARE CENTER',sender=params['gmail-user'],recipients=[email],body=f"Welcome thanks for choosing us\nYour Login Credentials Are:\n Email Address: {email}\nPassword: {password}\n\nHospital Code {hcode}\n\n Do not share your password\n\n\nThank You..." )
 
             flash("Data Sent and Inserted Successfully","warning")
             return render_template("addHosUser.html")
@@ -201,7 +206,6 @@ def hospitalUser():
         return render_template("/admin")
     
 
-           
 
 
 
