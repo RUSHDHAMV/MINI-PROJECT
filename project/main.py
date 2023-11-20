@@ -6,13 +6,30 @@ from flask_login import login_required,logout_user,login_user,login_manager,Logi
 #from sqlalchemy import create_engine
 
 from werkzeug.security import generate_password_hash,check_password_hash
-
+from flask_mail import Mail
 
 # mydatabase connection
 #helloo
 local_server=True
 app=Flask(__name__)
 app.secret_key="rushdha"
+
+
+
+with open('config.json','r') as c:
+    params=json.load(c)["params"]
+
+
+app.config.update(
+     MAIL_SERVER='smtp.gmail.com',
+     MAIL_PORT='465',
+     MAIL_USE_SSL=True,
+     MAIL_USERNAME='gmail-user',
+     MAIL_PASSWORD='gmail-password'
+ )
+mail = Mail(app)
+
+
 
 #this is for getting unique access
 login_manager=LoginManager(app)
@@ -26,8 +43,8 @@ app.config['SQLALCHEMY_DATABASE_URI']='mysql://root:@localhost/slot'
 db=SQLAlchemy(app)
 
 
-with open('config.json','r') as c:
-    params=json.load(c)["params"]
+
+
 
 
 @login_manager.user_loader
@@ -46,6 +63,13 @@ class User(UserMixin,db.Model):
    srfid=db.Column(db.String(20),unique=True)
    email=db.Column(db.String(100))
    dob=db.Column(db.String(2000))
+
+class HospitalUser(UserMixin,db.Model):
+   hid=db.Column(db.Integer,primary_key=True)
+   hcode=db.Column(db.String(20))
+   email=db.Column(db.String(100))
+   password=db.Column(db.String(1000))
+       
        
 
 @app.route("/")
@@ -151,9 +175,33 @@ def logout():
 def hospitalUser():
     if('user' in session and session['user']==params['user']):
         if request.method=="POST":
-            pass
-        return render_template("addHosUser.html")
+            hcode=request.form.get('hcode')
+            email=request.form.get('email')
+            password=request.form.get('password')        
+            encpassword=generate_password_hash(password)  
+            hcode=hcode.upper()      
+            emailUser=HospitalUser.query.filter_by(email=email).first()
+            if  emailUser:
+                flash("Email or srif is already taken","warning")
+         
+            # db.engine.execute(f"INSERT INTO `hospitaluser` (`hcode`,`email`,`password`) VALUES ('{hcode}','{email}','{encpassword}') ")
+            query=HospitalUser(hcode=hcode,email=email,password=encpassword)
+            db.session.add(query)
+            db.session.commit()
 
+            # my mail starts from here if you not need to send mail comment the below line
+           
+            mail.send_message('Bed Slot Booking CENTER',sender=params['gmail-user'],recipients=[email],body=f"Welcome thanks for choosing us\nYour Login Credentials Are:\n Email Address: {email}\nPassword: {password}\n\nHospital Code {hcode}\n\n Do not share your password\n\n\nThank You..." )
+
+            flash("Data Sent and Inserted Successfully","warning")
+            return render_template("addHosUser.html")
+
+    else:
+        flash("Login and try Again","warning")
+        return render_template("/admin")
+    
+
+           
 
 
 
@@ -169,6 +217,14 @@ def test():
     except Exception as e:
         print(e)
         return f'mydatabase is not connected {e}'
+    
+@app.route('/logoutadmin')
+
+def logoutadmin():
+    session.pop('user')
+    flash("You are Logout admin","primary")
+    return redirect('/admin')
+
 
 
 

@@ -3,7 +3,10 @@
     "params":
     {
         "user":"admin",
-        "password":"admin"
+        "password":"admin",
+        "gmail-user":"rushdha52@gmail.com",
+        "gmail-password":"rush52dha"
+
         
     }
 }
