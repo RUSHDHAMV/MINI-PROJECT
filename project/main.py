@@ -124,7 +124,7 @@ def admin():
     if request.method=="POST":
         username=request.form.get('username')
         password=request.form.get('password')
-        if(username==params['username'] and password==params['password']):
+        if(username==params['user'] and password==params['password']):
             session['user']=username
             flash("Login success","info")
             return render_template("addHosUser.html")
@@ -145,6 +145,16 @@ def logout():
     logout_user()
     flash("Logout Successfully","warning")
     return redirect(url_for('login'))
+
+
+@app.route('/addHospitalUser',methods=['POST','GET'])
+def hospitalUser():
+    if('user' in session and session['user']==params['user']):
+        if request.method=="POST":
+            pass
+        return render_template("addHosUser.html")
+
+
 
 
 
