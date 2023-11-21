@@ -23,14 +23,14 @@ with open('config.json','r') as c:
     params=json.load(c)["params"]
 
 
-app.config.update(
-     MAIL_SERVER='smtp.gmail.com',
-     MAIL_PORT='465',
-     MAIL_USE_SSL=True,
-     MAIL_USERNAME='gmail-user',
-     MAIL_PASSWORD='gmail-password'
- )
-mail = Mail(app)
+#app.config['MAIL_SERVER']='smtp.gmail.com'
+#app.config['MAIL_PORT']='465'
+#app.config['MAIL_USE_SSL']=True
+#app.config['MAIL_USERNAME']='gmail-user'
+#app.config['MAIL_PASSWORD']='gmail-password'
+#app.config['MAIL_USE_TLS']=False
+ 
+#mail = Mail(app)
 
 
 
@@ -68,7 +68,7 @@ class User(UserMixin,db.Model):
    dob=db.Column(db.String(2000))
 
 class Hospitaluser(UserMixin,db.Model):
-   hid=db.Column(db.Integer,primary_key=True)
+   id=db.Column(db.Integer,primary_key=True)
    hcode=db.Column(db.String(20))
    email=db.Column(db.String(100))
    password=db.Column(db.String(1000))
@@ -144,6 +144,25 @@ def login():
 
     return render_template("userlogin.html")
 
+
+@app.route('/hospitallogin',methods=['POST','GET'])
+def hospitallogin():
+    if request.method=="POST":
+        email=request.form.get('email')
+        password=request.form.get('password')
+        user=Hospitaluser.query.filter_by(email=email).first()
+        if user and check_password_hash(user.password,password):
+            login_user(user)
+            flash("Login Success","info")
+            return render_template("index.html")
+        else:
+            flash("Invalid Credentials","danger")
+            return render_template("hospitallogin.html")
+
+
+    return render_template("hospitallogin.html")
+
+
    
 #admin
 @app.route('/admin',methods=['POST','GET'])       
@@ -196,7 +215,7 @@ def hospitalUser():
 
             # my mail starts from here 
            
-            mail.send_message('COVID CARE CENTER',sender=params['gmail-user'],recipients=[email],body=f"Welcome thanks for choosing us\nYour Login Credentials Are:\n Email Address: {email}\nPassword: {password}\n\nHospital Code {hcode}\n\n Do not share your password\n\n\nThank You..." )
+            #mail.send_message('BED SLOT BOOKINGCENTER',sender=params['gmail-user'],recipients=[email],body=f"Welcome thanks for choosing us\nYour Login Credentials Are:\n Email Address: {email}\nPassword: {password}\n\nHospital Code {hcode}\n\n Do not share your password\n\n\nThank You..." )
 
             flash("Data Sent and Inserted Successfully","warning")
             return render_template("addHosUser.html")
