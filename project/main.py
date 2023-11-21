@@ -23,14 +23,14 @@ with open('config.json','r') as c:
     params=json.load(c)["params"]
 
 
-#app.config.update(
- #    MAIL_SERVER='smtp.gmail.com',
-  #   MAIL_PORT='465',
-   #  MAIL_USE_SSL=True,
-    # MAIL_USERNAME='gmail-user',
-     #MAIL_PASSWORD='gmail-password'
- #)
-#mail = Mail(app)
+app.config.update(
+     MAIL_SERVER='smtp.gmail.com',
+     MAIL_PORT='465',
+     MAIL_USE_SSL=True,
+     MAIL_USERNAME='gmail-user',
+     MAIL_PASSWORD='gmail-password'
+ )
+mail = Mail(app)
 
 
 
@@ -67,7 +67,7 @@ class User(UserMixin,db.Model):
    email=db.Column(db.String(100))
    dob=db.Column(db.String(2000))
 
-class HospitalUser(UserMixin,db.Model):
+class Hospitaluser(UserMixin,db.Model):
    hid=db.Column(db.Integer,primary_key=True)
    hcode=db.Column(db.String(20))
    email=db.Column(db.String(100))
@@ -185,25 +185,25 @@ def hospitalUser():
             password=request.form.get('password')        
             encpassword=generate_password_hash(password)  
             hcode=hcode.upper()      
-            emailUser=HospitalUser.query.filter_by(email=email).first()
+            emailUser=Hospitaluser.query.filter_by(email=email).first()
             if  emailUser:
                 flash("Email or srif is already taken","warning")
          
-            # db.engine.execute(f"INSERT INTO `hospitaluser` (`hcode`,`email`,`password`) VALUES ('{hcode}','{email}','{encpassword}') ")
-            query=HospitalUser(hcode=hcode,email=email,password=encpassword)
+            #db.engine.execute(f"INSERT INTO `hospitaluser` (`hcode`,`email`,`password`) VALUES ('{hcode}','{email}','{encpassword}') ")
+            query=Hospitaluser(hcode=hcode,email=email,password=encpassword)
             db.session.add(query)
             db.session.commit()
 
-            # my mail starts from here if you not need to send mail comment the below line
+            # my mail starts from here 
            
-            # mail.send_message('COVID CARE CENTER',sender=params['gmail-user'],recipients=[email],body=f"Welcome thanks for choosing us\nYour Login Credentials Are:\n Email Address: {email}\nPassword: {password}\n\nHospital Code {hcode}\n\n Do not share your password\n\n\nThank You..." )
+            mail.send_message('COVID CARE CENTER',sender=params['gmail-user'],recipients=[email],body=f"Welcome thanks for choosing us\nYour Login Credentials Are:\n Email Address: {email}\nPassword: {password}\n\nHospital Code {hcode}\n\n Do not share your password\n\n\nThank You..." )
 
             flash("Data Sent and Inserted Successfully","warning")
             return render_template("addHosUser.html")
 
-    else:
-        flash("Login and try Again","warning")
-        return render_template("/admin")
+        else:   
+             flash("Login and try Again","warning")
+             return render_template("/admin")
     
 
 
