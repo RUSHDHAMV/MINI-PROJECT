@@ -23,13 +23,13 @@ with open('config.json','r') as c:
     params=json.load(c)["params"]
 
 
-#app.config['MAIL_SERVER']='smtp.gmail.com'
-#app.config['MAIL_PORT']='465'
-#app.config['MAIL_USE_SSL']=True
-#app.config['MAIL_USERNAME']='gmail-user'
-#app.config['MAIL_PASSWORD']='gmail-password'
-#app.config['MAIL_USE_TLS']=False
- 
+# app.config.update(
+#     MAIL_SERVER='smtp.gmail.com',
+#     MAIL_PORT='465',
+#     MAIL_USE_SSL=True,
+#     MAIL_USERNAME='gmail account',
+#     MAIL_PASSWORD='gmail account password'
+# )
 #mail = Mail(app)
 
 
@@ -52,7 +52,8 @@ db=SQLAlchemy(app)
 
 @login_manager.user_loader
 def load_user(user_id):
-    return User.query.get(int(user_id)) 
+    return User.query.get(int(user_id)) or Hospitaluser.query.get(int(user_id))
+
 
 
 
@@ -72,7 +73,28 @@ class Hospitaluser(UserMixin,db.Model):
    hcode=db.Column(db.String(20))
    email=db.Column(db.String(100))
    password=db.Column(db.String(1000))
-       
+
+class Hospitaldata(db.Model):
+    id=db.Column(db.Integer,primary_key=True)
+    hcode=db.Column(db.String(20),unique=True)
+    hname=db.Column(db.String(100))
+    normalbed=db.Column(db.Integer)
+    hicubed=db.Column(db.Integer)
+    icubed=db.Column(db.Integer)
+    vbed=db.Column(db.Integer)
+
+
+
+class Bookingpatient(db.Model):
+    id=db.Column(db.Integer,primary_key=True)
+    srfid=db.Column(db.String(20),unique=True)
+    bedtype=db.Column(db.String(100))
+    hcode=db.Column(db.String(20))
+    spo2=db.Column(db.Integer)
+    pname=db.Column(db.String(100))
+    pphone=db.Column(db.String(100))
+    paddress=db.Column(db.String(100))
+
        
 
 @app.route("/")
@@ -247,6 +269,189 @@ def logoutadmin():
     session.pop('user')
     flash("You are Logout admin","primary")
     return redirect('/admin')
+
+def updatess(code):
+    postsdata=Hospitaldata.query.filter_by(hcode=code).first()
+    return render_template("hospitaldata.html",postsdata=postsdata)
+
+
+
+@app.route("/addhospitalinfo",methods=['POST','GET'])
+def addhospitalinfo():
+    email=current_user.email
+    posts=Hospitaluser.query.filter_by(email=email).first()
+    code=posts.hcode
+    postsdata=Hospitaldata.query.filter_by(hcode=code).first()
+
+    if request.method=="POST":
+        hcode=request.form.get('hcode')
+        hname=request.form.get('hname')
+        nbed=request.form.get('normalbed')
+        hbed=request.form.get('hicubeds')
+        ibed=request.form.get('icubeds')
+        vbed=request.form.get('ventbeds')
+        #hcode wiil be in uppercase
+        hcode=hcode.upper()
+        #to check particular user is there
+        huser=Hospitaluser.query.filter_by(hcode=hcode).first()
+        #if already hcode is data added then it can update only
+        hduser=Hospitaldata.query.filter_by(hcode=hcode).first()
+        if hduser:
+            flash("Data is already Present you can update it..","primary")
+            return render_template("hospitaldata.html")
+        #if user is there then execute this query
+        if huser:            
+            # db.engine.execute(f"INSERT INTO `hospitaldata` (`hcode`,`hname`,`normalbed`,`hicubed`,`icubed`,`vbed`) VALUES ('{hcode}','{hname}','{nbed}','{hbed}','{ibed}','{vbed}')")
+            query=Hospitaldata(hcode=hcode,hname=hname,normalbed=nbed,hicubed=hbed,icubed=ibed,vbed=vbed)
+            db.session.add(query)
+            db.session.commit()
+            flash("Data Is Added","primary")
+            return redirect('/addhospitalinfo')
+            
+
+        else:
+            flash("Hospital Code not Exist","warning")
+            return redirect('/addhospitalinfo')
+
+
+
+
+    return render_template("hospitaldata.html",postsdata=postsdata)
+
+@app.route("/hedit/<string:id>",methods=['POST','GET'])
+@login_required
+def hedit(id):
+    posts=Hospitaldata.query.filter_by(id=id).first()
+  
+    if request.method=="POST":
+        hcode=request.form.get('hcode')
+        hname=request.form.get('hname')
+        nbed=request.form.get('normalbed')
+        hbed=request.form.get('hicubeds')
+        ibed=request.form.get('icubeds')
+        vbed=request.form.get('ventbeds')
+        hcode=hcode.upper()
+        # db.engine.execute(f"UPDATE `hospitaldata` SET `hcode` ='{hcode}',`hname`='{hname}',`normalbed`='{nbed}',`hicubed`='{hbed}',`icubed`='{ibed}',`vbed`='{vbed}' WHERE `hospitaldata`.`id`={id}")
+        post=Hospitaldata.query.filter_by(id=id).first()
+        post.hcode=hcode
+        post.hname=hname
+        post.normalbed=nbed
+        post.hicubed=hbed
+        post.icubed=ibed
+        post.vbed=vbed
+        db.session.commit()
+        flash("Slot Updated","info")
+        return redirect("/addhospitalinfo")
+
+    # posts=Hospitaldata.query.filter_by(id=id).first()
+    return render_template("hedit.html",posts=posts)
+
+
+@app.route("/hdelete/<string:id>",methods=['POST','GET'])
+@login_required
+def hdelete(id):
+    # db.engine.execute(f"DELETE FROM `hospitaldata` WHERE `hospitaldata`.`id`={id}")
+    post=Hospitaldata.query.filter_by(id=id).first()
+    db.session.delete(post)
+    db.session.commit()
+    flash("Date Deleted","danger")
+    return redirect("/addhospitalinfo")
+
+
+
+@app.route("/pdetails",methods=['GET'])
+@login_required
+def pdetails():
+    code=current_user.srfid
+    print(code)
+    data=Bookingpatient.query.filter_by(srfid=code).first()
+    return render_template("details.html",data=data)
+
+
+
+
+
+@app.route("/slotbooking",methods=['POST','GET'])
+@login_required
+def slotbooking():
+    # query1=db.engine.execute(f"SELECT * FROM `hospitaldata` ")
+    # query=db.engine.execute(f"SELECT * FROM `hospitaldata` ")
+    query1=Hospitaldata.query.all()
+    query=Hospitaldata.query.all()
+    if request.method=="POST":
+        
+        srfid=request.form.get('srfid')
+        bedtype=request.form.get('bedtype')
+        hcode=request.form.get('hcode')
+        spo2=request.form.get('spo2')
+        pname=request.form.get('pname')
+        pphone=request.form.get('pphone')
+        paddress=request.form.get('paddress')  
+        check2=Hospitaldata.query.filter_by(hcode=hcode).first()
+        checkpatient=Bookingpatient.query.filter_by(srfid=srfid).first()
+        if checkpatient:
+            flash("already srd id is registered ","warning")
+            return render_template("booking.html",query=query,query1=query1)
+        
+        if not check2:
+            flash("Hospital Code not exist","warning")
+            return render_template("booking.html",query=query,query1=query1)
+
+        code=hcode
+        # dbb=db.engine.execute(f"SELECT * FROM `hospitaldata` WHERE `hospitaldata`.`hcode`='{code}' ")  
+        dbb=Hospitaldata.query.filter_by(hcode=hcode).first()      
+        bedtype=bedtype
+        if bedtype=="NormalBed":       
+            for d in dbb:
+                seat=d.normalbed
+                print(seat)
+                ar=Hospitaldata.query.filter_by(hcode=code).first()
+                ar.normalbed=seat-1
+                db.session.commit()
+                
+            
+        elif bedtype=="HICUBed":      
+            for d in dbb:
+                seat=d.hicubed
+                print(seat)
+                ar=Hospitaldata.query.filter_by(hcode=code).first()
+                ar.hicubed=seat-1
+                db.session.commit()
+
+        elif bedtype=="ICUBed":     
+            for d in dbb:
+                seat=d.icubed
+                print(seat)
+                ar=Hospitaldata.query.filter_by(hcode=code).first()
+                ar.icubed=seat-1
+                db.session.commit()
+
+        elif bedtype=="VENTILATORBed": 
+            for d in dbb:
+                seat=d.vbed
+                ar=Hospitaldata.query.filter_by(hcode=code).first()
+                ar.vbed=seat-1
+                db.session.commit()
+        else:
+            pass
+
+        check=Hospitaldata.query.filter_by(hcode=hcode).first()
+        if check!=None:
+            if(seat>0 and check):
+                res=Bookingpatient(srfid=srfid,bedtype=bedtype,hcode=hcode,spo2=spo2,pname=pname,pphone=pphone,paddress=paddress)
+                db.session.add(res)
+                db.session.commit()
+                flash("Slot is Booked kindly Visit Hospital for Further Procedure","success")
+                return render_template("booking.html",query=query,query1=query1)
+            else:
+                flash("Something Went Wrong","danger")
+                return render_template("booking.html",query=query,query1=query1)
+        else:
+            flash("Give the proper hospital Code","info")
+            return render_template("booking.html",query=query,query1=query1)
+            
+    
+    return render_template("booking.html",query=query,query1=query1)
 
 
 
