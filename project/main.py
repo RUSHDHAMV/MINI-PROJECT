@@ -85,6 +85,20 @@ class Hospitaldata(db.Model):
 
 
 
+
+class Trig(db.Model):
+    id=db.Column(db.Integer,primary_key=True)
+    hcode=db.Column(db.String(20))
+    normalbed=db.Column(db.Integer)
+    hicubed=db.Column(db.Integer)
+    icubed=db.Column(db.Integer)
+    vbed=db.Column(db.Integer)
+    action=db.Column(db.String(50))
+    date=db.Column(db.String(50))
+
+
+
+
 class Bookingpatient(db.Model):
     id=db.Column(db.Integer,primary_key=True)
     srfid=db.Column(db.String(20),unique=True)
@@ -108,6 +122,13 @@ def home():
 #@app.route("/userlogin")
 #def userlogin():
  #   return render_template("userlogin.html")
+
+
+
+@app.route("/trigers")
+def trigers():
+    query=Trig.query.all() 
+    return render_template("trigers.html",query=query)
 
 
 
@@ -244,7 +265,7 @@ def hospitalUser():
 
         else:   
              flash("Login and try Again","warning")
-             return render_template("/admin")
+             return render_template("/addHosUser.html")
     
 
 
@@ -269,6 +290,11 @@ def logoutadmin():
     session.pop('user')
     flash("You are Logout admin","primary")
     return redirect('/admin')
+
+
+
+
+
 
 def updatess(code):
     postsdata=Hospitaldata.query.filter_by(hcode=code).first()
@@ -311,7 +337,7 @@ def addhospitalinfo():
 
         else:
             flash("Hospital Code not Exist","warning")
-            return redirect('/addhospitalinfo')
+            return render_template('/addhospitalinfo')
 
 
 
@@ -399,39 +425,37 @@ def slotbooking():
 
         code=hcode
         # dbb=db.engine.execute(f"SELECT * FROM `hospitaldata` WHERE `hospitaldata`.`hcode`='{code}' ")  
+        
         dbb=Hospitaldata.query.filter_by(hcode=hcode).first()      
         bedtype=bedtype
-        if bedtype=="NormalBed":       
-            for d in dbb:
-                seat=d.normalbed
-                print(seat)
-                ar=Hospitaldata.query.filter_by(hcode=code).first()
-                ar.normalbed=seat-1
-                db.session.commit()
+        if bedtype=="NormalBed" and dbb:       
+            
+            seat=dbb.normalbed
+            print(seat)
+            ar=Hospitaldata.query.filter_by(hcode=code).first()
+            ar.normalbed=seat-1
+            db.session.commit()
                 
             
-        elif bedtype=="HICUBed":      
-            for d in dbb:
-                seat=d.hicubed
-                print(seat)
-                ar=Hospitaldata.query.filter_by(hcode=code).first()
-                ar.hicubed=seat-1
-                db.session.commit()
+        elif bedtype=="HICUBed" and dbb:
+            seat=dbb.hicubed
+            print(seat)
+            ar=Hospitaldata.query.filter_by(hcode=code).first()
+            ar.hicubed=seat-1
+            db.session.commit()
 
-        elif bedtype=="ICUBed":     
-            for d in dbb:
-                seat=d.icubed
-                print(seat)
-                ar=Hospitaldata.query.filter_by(hcode=code).first()
-                ar.icubed=seat-1
-                db.session.commit()
+        elif bedtype=="ICUBed" and dbb:
+            seat=dbb.icubed
+            print(seat)
+            ar=Hospitaldata.query.filter_by(hcode=code).first()
+            ar.icubed=seat-1
+            db.session.commit()
 
-        elif bedtype=="VENTILATORBed": 
-            for d in dbb:
-                seat=d.vbed
-                ar=Hospitaldata.query.filter_by(hcode=code).first()
-                ar.vbed=seat-1
-                db.session.commit()
+        elif bedtype=="VENTILATORBed" and dbb:
+            seat=dbb.vbed
+            ar=Hospitaldata.query.filter_by(hcode=code).first()
+            ar.vbed=seat-1
+            db.session.commit()
         else:
             pass
 
