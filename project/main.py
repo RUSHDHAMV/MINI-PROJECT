@@ -127,8 +127,13 @@ def home():
 
 @app.route("/trigers")
 def trigers():
-    query=Trig.query.all() 
-    return render_template("trigers.html",query=query)
+    if('user' in session and session['user']=="admin"):
+        query=Trig.query.all() 
+        return render_template("trigers.html",query=query)
+    else:   
+             flash("Login and try Again","warning")
+             return render_template("/addHosUser.html")
+        
 
 
 
@@ -262,10 +267,13 @@ def hospitalUser():
 
             flash("Data Sent and Inserted Successfully","warning")
             return render_template("addHosUser.html")
+        else:
+            return render_template("/addHosUser.html")
 
-        else:   
-             flash("Login and try Again","warning")
-             return render_template("/addHosUser.html")
+
+    else:   
+        flash("Login and try Again","warning")
+        return render_template("/addHosUser.html")
     
 
 
