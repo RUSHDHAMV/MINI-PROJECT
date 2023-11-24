@@ -396,7 +396,7 @@ def hdelete(id):
 @app.route("/pdetails",methods=['GET'])
 @login_required
 def pdetails():
-    code=current_user.srfid
+    code=current_user.id
     print(code)
     data=Bookingpatient.query.filter_by(srfid=code).first()
     return render_template("details.html",data=data)
@@ -484,6 +484,7 @@ def slotbooking():
             
     
     return render_template("booking.html",query=query,query1=query1)
+
 
 
 
