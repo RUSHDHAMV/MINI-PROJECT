@@ -67,6 +67,7 @@ class User(UserMixin,db.Model):
    srfid=db.Column(db.String(20),unique=True)
    email=db.Column(db.String(100))
    dob=db.Column(db.String(2000))
+   
 
 class Hospitaluser(UserMixin,db.Model):
    id=db.Column(db.Integer,primary_key=True)
@@ -88,12 +89,12 @@ class Hospitaldata(db.Model):
 
 class Trig(db.Model):
     id=db.Column(db.Integer,primary_key=True)
-    hcode=db.Column(db.String(20))
+    hcode=db.Column(db.String(50))
     normalbed=db.Column(db.Integer)
     hicubed=db.Column(db.Integer)
     icubed=db.Column(db.Integer)
     vbed=db.Column(db.Integer)
-    action=db.Column(db.String(50))
+    querys=db.Column(db.String(50))
     date=db.Column(db.String(50))
 
 
@@ -125,6 +126,8 @@ def home():
 
 
 
+
+
 @app.route("/trigers")
 def trigers():
     if('user' in session and session['user']=="admin"):
@@ -134,7 +137,6 @@ def trigers():
              flash("Login and try Again","warning")
              return render_template("/addHosUser.html")
         
-
 
 
 # when anyone sign in the submit btn then all the infrmtn will happen in signup
@@ -206,6 +208,9 @@ def hospitallogin():
         else:
             flash("Invalid Credentials","danger")
             return render_template("hospitallogin.html")
+        
+
+
 
 
     return render_template("hospitallogin.html")
@@ -396,11 +401,12 @@ def hdelete(id):
 @app.route("/pdetails",methods=['GET'])
 @login_required
 def pdetails():
-    code=current_user.id
+    code=current_user.srfid
     print(code)
     data=Bookingpatient.query.filter_by(srfid=code).first()
-    return render_template("details.html",data=data)
+    
 
+    return render_template("details.html",data=data)
 
 
 
@@ -484,8 +490,6 @@ def slotbooking():
             
     
     return render_template("booking.html",query=query,query1=query1)
-
-
 
 
 
