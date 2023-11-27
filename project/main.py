@@ -492,5 +492,4 @@ def slotbooking():
     return render_template("booking.html",query=query,query1=query1)
 
 
-
 app.run(debug=True)
